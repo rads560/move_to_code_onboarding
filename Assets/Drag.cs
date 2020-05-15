@@ -9,32 +9,37 @@ public class Drag : MonoBehaviour
     ManipulationHandler manipulationHandler;
     Vector3 startingPosition;
     GameObject clone;
+    Boolean triggerFlag;
 
     private void Awake()
     {
-        //Debug.Log("running awake");
         startingPosition = transform.position;
         manipulationHandler = GetComponent<ManipulationHandler>();
-        manipulationHandler.OnManipulationStarted.AddListener(startedMotion);
-        manipulationHandler.OnManipulationEnded.AddListener(stoppedMotion);
+        manipulationHandler.OnManipulationStarted.AddListener(StartedMotion);
+        manipulationHandler.OnManipulationEnded.AddListener(StoppedMotion);
     }
 
-    private void stoppedMotion(ManipulationEventData arg0)
+    public void OnTriggerEnter(Collider other)
     {
-        if (Vector3.Distance(transform.position, startingPosition) < 2) // how far you can move the block while it still will snap back
+        triggerFlag = true;
+    }
+
+    public void OnTriggerExit(Collider other)
+    {
+        triggerFlag = false;
+    }
+    
+    private void StoppedMotion(ManipulationEventData arg0)
+    {
+        if (triggerFlag) // if we are touching the original item
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject); // delete the extra block
         }
 
     }
 
-    public void startedMotion(ManipulationEventData arg0)
+    private void StartedMotion(ManipulationEventData arg0)
     {
-        //Debug.Log("started motion");
-        if (Vector3.Distance(transform.position, startingPosition) < 1)
-        {
-            clone = Instantiate(this.gameObject, startingPosition, Quaternion.identity); //  make a clone in original position
-            //Debug.Log("clones start: " + startingPosition);
-        }
+        clone = Instantiate(gameObject, startingPosition, Quaternion.identity); //  make a clone in original position
     }
 }
