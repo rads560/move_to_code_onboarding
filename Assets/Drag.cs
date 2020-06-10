@@ -9,13 +9,13 @@ public class Drag : MonoBehaviour
     ManipulationHandler manipulationHandler;
     Vector3 startingPosition;
     GameObject clone;
-    Boolean triggerFlag;
-    Boolean enableFlag;
+    Boolean stillInContactWithOriginal;
+    Boolean blockStillInMenu;
 
     public Console console;
 
     private MeshRenderer renderer;
-    private MeshRenderer clone_renderer;
+    private MeshRenderer cloneRenderer;
 
     private void Awake()
     {
@@ -24,34 +24,34 @@ public class Drag : MonoBehaviour
         manipulationHandler = GetComponent<ManipulationHandler>();
         manipulationHandler.OnManipulationStarted.AddListener(StartedMotion);
         manipulationHandler.OnManipulationEnded.AddListener(StoppedMotion);
-        enableFlag = true;
+        blockStillInMenu = true;
     }
 
-    public void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter()
     {
-        triggerFlag = true;
-        if(clone_renderer != null)
+        stillInContactWithOriginal = true;
+        if(cloneRenderer != null)
         {
-            foreach (var mat in clone_renderer.materials)
+            foreach (Material mat in cloneRenderer.materials)
             {
                 mat.SetFloat("_Outline", 0.15f);
             }
         }
     }
 
-    public void OnTriggerExit(Collider other)
+    public void OnTriggerExit()
     {
-        triggerFlag = false;
-        if (clone_renderer != null)
+        stillInContactWithOriginal = false;
+        if (cloneRenderer != null)
         {
-            foreach (var mat in clone_renderer.materials)
+            foreach (Material mat in cloneRenderer.materials)
             {
                 mat.SetFloat("_Outline", 0f);
             }
         }
         if (renderer != null)
         {
-            foreach (var mat in renderer.materials)
+            foreach (Material mat in renderer.materials)
             {
                 mat.SetFloat("_Outline", 0f);
             }
@@ -60,26 +60,25 @@ public class Drag : MonoBehaviour
     
     private void StoppedMotion(ManipulationEventData arg0)
     {
-        if (triggerFlag) // if we are touching the original item
+        if (stillInContactWithOriginal)
         {
-            Destroy(gameObject); // delete the extra block
+            Destroy(gameObject);
         }
         else
         {
-            transform.parent = console.transform;
-            gameObject.GetComponent<Drag>().enabled = false;
-            enableFlag = false;
+            transform.SetParent(console.transform);
+            blockStillInMenu = false;
         }
-        if (clone_renderer != null)
+        if (cloneRenderer != null)
         {
-            foreach (var mat in clone_renderer.materials)
+            foreach (Material mat in cloneRenderer.materials)
             {
                 mat.SetFloat("_Outline", 0f);
             }
         }
         if (renderer != null)
         {
-            foreach (var mat in renderer.materials)
+            foreach (Material mat in renderer.materials)
             {
                 mat.SetFloat("_Outline", 0f);
             }
@@ -88,11 +87,11 @@ public class Drag : MonoBehaviour
 
     private void StartedMotion(ManipulationEventData arg0)
     {
-        if(enableFlag == true)
+        if (blockStillInMenu)
         {
             clone = Instantiate(gameObject, startingPosition, Quaternion.identity); //  make a clone in original position
             clone.transform.SetParent(transform.parent);
-            clone_renderer = clone.GetComponent<MeshRenderer>();
+            cloneRenderer = clone.GetComponent<MeshRenderer>();
         }
     }
 }
