@@ -2,11 +2,10 @@
 A repository to contain Radhika's unity onboarding experimentation.
 
 ## What's done so far
-* Block that spawns new blocks when selected. Dragging the block away from the original "menu item" block by a certain distance allows the block to stay, while it gets deleted if it stays within that distance from the "menu item" block
+* Shelf with multiple tabs that house their own blocks and allow for proper spawning behavior. The menu items highlight/unhighlight when the user has moved the block far enough away.
 
 ## What needs to be done
-* Change the code so that it uses "OnCollisionExit" rather than a hard-coded distance from the menu
-* Create a shelf at the bottom of the screen to house "menu blocks" with different tabs that can light up / go gray on a certain condition
+* Add the code to the official move_to_code repository
 
 ## How to run
 * Download "Unity Hub" and set up Unity v 2018.4.21

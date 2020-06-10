@@ -9,37 +9,89 @@ public class Drag : MonoBehaviour
     ManipulationHandler manipulationHandler;
     Vector3 startingPosition;
     GameObject clone;
-    Boolean triggerFlag;
+    Boolean stillInContactWithOriginal;
+    Boolean blockStillInMenu;
+
+    public Console console;
+
+    private MeshRenderer renderer;
+    private MeshRenderer cloneRenderer;
 
     private void Awake()
     {
         startingPosition = transform.position;
+        renderer = GetComponent<MeshRenderer>();
         manipulationHandler = GetComponent<ManipulationHandler>();
         manipulationHandler.OnManipulationStarted.AddListener(StartedMotion);
         manipulationHandler.OnManipulationEnded.AddListener(StoppedMotion);
+        blockStillInMenu = true;
     }
 
-    public void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter()
     {
-        triggerFlag = true;
+        stillInContactWithOriginal = true;
+        if(cloneRenderer != null)
+        {
+            foreach (Material mat in cloneRenderer.materials)
+            {
+                mat.SetFloat("_Outline", 0.15f);
+            }
+        }
     }
 
-    public void OnTriggerExit(Collider other)
+    public void OnTriggerExit()
     {
-        triggerFlag = false;
+        stillInContactWithOriginal = false;
+        if (cloneRenderer != null)
+        {
+            foreach (Material mat in cloneRenderer.materials)
+            {
+                mat.SetFloat("_Outline", 0f);
+            }
+        }
+        if (renderer != null)
+        {
+            foreach (Material mat in renderer.materials)
+            {
+                mat.SetFloat("_Outline", 0f);
+            }
+        }
     }
     
     private void StoppedMotion(ManipulationEventData arg0)
     {
-        if (triggerFlag) // if we are touching the original item
+        if (stillInContactWithOriginal)
         {
-            Destroy(gameObject); // delete the extra block
+            Destroy(gameObject);
         }
-
+        else
+        {
+            transform.SetParent(console.transform);
+            blockStillInMenu = false;
+        }
+        if (cloneRenderer != null)
+        {
+            foreach (Material mat in cloneRenderer.materials)
+            {
+                mat.SetFloat("_Outline", 0f);
+            }
+        }
+        if (renderer != null)
+        {
+            foreach (Material mat in renderer.materials)
+            {
+                mat.SetFloat("_Outline", 0f);
+            }
+        }
     }
 
     private void StartedMotion(ManipulationEventData arg0)
     {
-        clone = Instantiate(gameObject, startingPosition, Quaternion.identity); //  make a clone in original position
+        if (blockStillInMenu)
+        {
+            clone = Instantiate(gameObject, startingPosition, Quaternion.identity); //  make a clone in original position
+            clone.transform.SetParent(transform.parent);
+            cloneRenderer = clone.GetComponent<MeshRenderer>();
+        }
     }
 }
